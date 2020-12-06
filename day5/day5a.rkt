@@ -1,4 +1,8 @@
-#lang racket
+#lang racket/base
+
+(require racket/list
+         racket/file
+         racket/function)
 
 (define rows (range 0 128))
 (define columns (range 0 8))
@@ -28,7 +32,7 @@
       [(or (<= ls-length 1)
            (zero? (length instructions))) ls]
       [else (if (car instructions)
-              (binary-filter (take ls (/ ls-length 2)) (cdr instructions))
-              (binary-filter (drop ls (/ ls-length 2)) (cdr instructions)))])))
+                (binary-filter (take ls (/ ls-length 2)) (cdr instructions))
+                (binary-filter (drop ls (/ ls-length 2)) (cdr instructions)))])))
 
 (day5a "day5-input.txt")

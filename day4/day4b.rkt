@@ -1,4 +1,9 @@
-#lang racket
+#lang racket/base
+
+(require racket/file
+         racket/list
+         racket/match
+         racket/string)
 
 (define (day4a file)
   (for/sum ([passport (string-split (file->string file) "\n\n")])
@@ -31,9 +36,9 @@
 
 (define (valid-height? v)
   (and v (match (string->list v)
-          [(list n ... #\c #\m) (number-between? (string->number (list->string n)) 150 193)]
-          [(list n ... #\i #\n) (number-between? (string->number (list->string n)) 59 76)]
-          [else #f])))
+           [(list n ... #\c #\m) (number-between? (string->number (list->string n)) 150 193)]
+           [(list n ... #\i #\n) (number-between? (string->number (list->string n)) 59 76)]
+           [else #f])))
 
 (define (valid-hair-color? v)
   (and v (regexp-match-exact? #px"#[0-9a-z]{6}" v)))

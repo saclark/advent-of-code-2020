@@ -1,4 +1,9 @@
-#lang racket
+#lang racket/base
+
+(require racket/list
+         racket/file
+         racket/function
+         racket/set)
 
 (define rows (range 0 128))
 (define columns (range 0 8))
@@ -9,17 +14,17 @@
 (define (find-my-seat ids)
   (define (find-my-seat* sorted-ids [prev-two '()])
     (if (< (length prev-two) 2)
-      (find-my-seat* (cdr sorted-ids) (cons (car sorted-ids) prev-two))
-      (let ([id (car sorted-ids)]
-            [prev-id (car prev-two)]
-            [prev-prev-id (cadr prev-two)])
-        (if (and (> (- prev-id prev-prev-id) 1)
-                 (> (- id prev-id) 1))
-          prev-id
-          (find-my-seat* (cdr sorted-ids) (list id prev-id))))))
+        (find-my-seat* (cdr sorted-ids) (cons (car sorted-ids) prev-two))
+        (let ([id (car sorted-ids)]
+              [prev-id (car prev-two)]
+              [prev-prev-id (cadr prev-two)])
+          (if (and (> (- prev-id prev-prev-id) 1)
+                   (> (- id prev-id) 1))
+              prev-id
+              (find-my-seat* (cdr sorted-ids) (list id prev-id))))))
   (if (< (length ids) 3)
-    (raise-argument-error 'find-my-seat "list of with length >= 3" ids)
-    (find-my-seat* (sort ids <))))
+      (raise-argument-error 'find-my-seat "list of with length >= 3" ids)
+      (find-my-seat* (sort ids <))))
 
 (define (find-missing-ids exp-ids act-ids)
   (let ([act-id-set (list->set act-ids)])
@@ -27,8 +32,8 @@
                #:result (reverse missing-ids))
               ([id exp-ids])
       (if (set-member? act-id-set id)
-        missing-ids
-        (cons id missing-ids)))))
+          missing-ids
+          (cons id missing-ids)))))
 
 (define (parse-seat-ids input)
   (map (compose1 seat-id decode-boarding-pass) (file->lines input)))
@@ -55,7 +60,7 @@
       [(or (<= ls-length 1)
            (zero? (length instructions))) ls]
       [else (if (car instructions)
-              (binary-filter (take ls (/ ls-length 2)) (cdr instructions))
-              (binary-filter (drop ls (/ ls-length 2)) (cdr instructions)))])))
+                (binary-filter (take ls (/ ls-length 2)) (cdr instructions))
+                (binary-filter (drop ls (/ ls-length 2)) (cdr instructions)))])))
 
 (day5b "day5-input.txt")

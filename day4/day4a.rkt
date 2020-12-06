@@ -1,4 +1,8 @@
-#lang racket
+#lang racket/base
+
+(require racket/file
+         racket/list
+         racket/string)
 
 (define (day4a file)
   (for/sum ([passport (string-split (file->string file) "\n\n")])

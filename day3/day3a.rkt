@@ -1,4 +1,7 @@
-#lang racket
+#lang racket/base
+
+(require racket/file
+         racket/list)
 
 (define m (- (/ 1 3)))
 (define b 0)
