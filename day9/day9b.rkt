@@ -12,11 +12,11 @@
 (define (day9b input-file-path)
   (let* ([numbers (input->numbers input-file-path)]
          [sum (find-invalid-number (drop numbers preamble-length) (take numbers preamble-length))]
-         [set (find-contiguous-set-that-sums numbers sum)]
+         [set (find-contiguous-set-that-sums-to-n numbers sum)]
          [sorted-set (sort set <)])
     (+ (car set) (last sorted-set))))
 
-(define (find-contiguous-set-that-sums numbers sum [n 2])
+(define (find-contiguous-set-that-sums-to-n numbers sum [n 2])
   (if (> n (length numbers))
       #f
       (let ([group (for/first ([group (list->contiguous-groups numbers n)]
@@ -24,7 +24,7 @@
                      group)])
         (if group
             group
-            (find-contiguous-set-that-sums numbers sum (+ n 1))))))
+            (find-contiguous-set-that-sums-to-n numbers sum (+ n 1))))))
 
 (define (list->contiguous-groups ls n [grouped '()])
   (cond
