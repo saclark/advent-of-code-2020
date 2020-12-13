@@ -7,16 +7,16 @@
          racket/string
          threading)
 
-(define (solve-day11-part2 seating-chart)
+(define (solve seating-chart)
   (for/sum ([row (fill-seats-until-stable seating-chart)])
     (count (curry eq? 'occupied) row)))
 
-(define (fill-seats-until-stable seating-chart #:animate? [animate? #f])
-  (if animate? (show-animation-frame seating-chart) (void))
+(define (fill-seats-until-stable seating-chart #:visualize? [visualize? #f])
+  (if visualize? (display-visualization-frame seating-chart) (void))
   (let-values ([(new-chart stable?) (fill-seats seating-chart)])
     (if stable?
         new-chart
-        (fill-seats-until-stable new-chart #:animate? animate?))))
+        (fill-seats-until-stable new-chart #:visualize? visualize?))))
 
 (define (fill-seats seating-chart)
   (for/fold ([chart-acc '()]
@@ -89,17 +89,17 @@
   (define row->string (λ (row) (string-join (map symbol->char row))))
   (string-join (map row->string seating-chart) "\n"))
 
-(define (show-animation-frame seating-chart)
+(define (display-visualization-frame seating-chart)
   (display "\r")
   (display (seating-chart->string seating-chart))
   (display (format "\033[~aA" (- (length seating-chart) 1)))
   (sleep 0.2))
 
 ;; Solution
-(solve-day11-part2 (parse-input "input.txt"))
+(solve (parse-input "input.txt"))
 
-;; Animation
+;; Visualization
 ;; (void
 ;;   (begin
-;;     (fill-seats-until-stable (parse-input "animation-input.txt") #:animate? 0.2))
+;;     (fill-seats-until-stable (parse-input "visualization-input.txt") #:visualize? 0.2))
 ;;     (display "\r"))
