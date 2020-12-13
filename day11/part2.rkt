@@ -101,5 +101,5 @@
 ;; Visualization
 ;; (void
 ;;   (begin
-;;     (fill-seats-until-stable (parse-input "visualization-input.txt") #:visualize? 0.2))
+;;     (fill-seats-until-stable (parse-input "visualization-input.txt") #:visualize? #t))
 ;;     (display "\r"))
