@@ -22,13 +22,13 @@
          (state-y s)
          (modulo (+ degrees (state-m s)) 360)))
 
-(define (forward s n)
+(define (move-forward s n)
   (case (state-m s)
     [(0)   (move s n 0)]
     [(90)  (move s 0 n)]
     [(180) (move s (- n) 0)]
     [(270) (move s 0 (- n))]
-    [else (raise-argument-error 'forward "one of: 0, 90, 180, 270" n)]))
+    [else (raise-argument-error 'move-forward "one of: 0, 90, 180, 270" n)]))
 
 (define (execute-instruction instruction state)
   (match instruction
@@ -38,7 +38,7 @@
     [(cons 'W n) (move state (- n) 0)]
     [(cons 'L n) (rotate state n)]
     [(cons 'R n) (rotate state (- n))]
-    [(cons 'F n) (forward state n)]))
+    [(cons 'F n) (move-forward state n)]))
 
 (define (parse-input input-file-path)
   (define list->number (λ (digits) (string->number (list->string digits))))

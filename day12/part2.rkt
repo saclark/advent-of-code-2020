@@ -15,7 +15,7 @@
 (define (set-offsets s x-offset y-offset)
   (state (state-x s) (state-y s) x-offset y-offset))
 
-(define (forward s n)
+(define (move-forward s n)
   (move-ship s (* n (state-x-offset s)) (* n (state-y-offset s))))
 
 (define (move-ship s x+ y+)
@@ -46,7 +46,7 @@
     [(cons 'W n) (move-waypoint state (- n) 0)]
     [(cons 'L n) (rotate-waypoint state n)]
     [(cons 'R n) (rotate-waypoint state (- n))]
-    [(cons 'F n) (forward state n)]))
+    [(cons 'F n) (move-forward state n)]))
 
 (define (parse-input input-file-path)
   (define list->number (λ (digits) (string->number (list->string digits))))
