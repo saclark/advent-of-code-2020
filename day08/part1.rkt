@@ -1,7 +1,10 @@
-#lang racket
+#lang racket/base
 
 (require racket/file
-         srfi/13)
+         racket/match
+         racket/set
+         racket/string
+         (prefix-in srfi13: srfi/13))
 
 (define (solve input-file-path)
   (excute-instructions (parse-instructions input-file-path)))
@@ -23,8 +26,8 @@
       (cons op (parse-arg arg)))))
 
 (define (parse-arg arg)
-  (let ([sign (string-take arg 1)]
-        [num (string->number (string-drop arg 1))])
+  (let ([sign (srfi13:string-take arg 1)]
+        [num (string->number (srfi13:string-drop arg 1))])
     (match sign
       ["-" (- num)]
       ["+" num])))
