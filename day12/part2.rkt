@@ -51,8 +51,8 @@
 (define (parse-input input-file-path)
   (define list->number (λ (digits) (string->number (list->string digits))))
   (for/list ([chars (map string->list (file->lines input-file-path))])
-    (match chars
-      [(list char digits ...) (cons (string->symbol (string char))
-                                    (list->number digits))])))
+    (match-let ([(list char digits ...) chars])
+      (cons (string->symbol (string char))
+            (list->number digits)))))
 
 (solve (parse-input "input.txt"))
