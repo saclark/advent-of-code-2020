@@ -11,7 +11,7 @@
     (for/sum ([num ticket])
       (if (breaks-rules? num) num 0))))
 
-(struct rule (name min1 max1 min2 max2) #:transparent)
+(struct rule (name min1 max1 min2 max2))
 
 (define (valid-number? rule n)
   (or (and ((rule-min1 rule) . <= . n) (n . <= . (rule-max1 rule)))

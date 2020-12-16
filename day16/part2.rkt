@@ -50,7 +50,7 @@
         [(1) (cons (cons col (set-first candidates)) known)]
         [else known]))))
 
-(struct field (name min1 max1 min2 max2) #:transparent)
+(struct field (name min1 max1 min2 max2))
 
 (define (valid-ticket? fields ticket)
   (for/and ([num ticket])
