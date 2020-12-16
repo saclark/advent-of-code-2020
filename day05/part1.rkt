@@ -15,8 +15,8 @@
 
 (define (decode-boarding-pass pass-string)
   (let* ([pass-chars (string->list pass-string)]
-         [row-instructions (map (curry eq? #\F) (take pass-chars 7))]
-         [col-instructions (map (curry eq? #\L) (drop pass-chars 7))])
+         [row-instructions (map (curry eqv? #\F) (take pass-chars 7))]
+         [col-instructions (map (curry eqv? #\L) (drop pass-chars 7))])
     (list (binary-find rows row-instructions)
           (binary-find columns col-instructions))))
 

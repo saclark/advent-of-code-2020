@@ -9,7 +9,7 @@
 
 (define (solve seating-chart)
   (for/sum ([row (fill-seats-until-stable seating-chart)])
-    (count (curry eq? 'occupied) row)))
+    (count (curry eqv? 'occupied) row)))
 
 (define (fill-seats-until-stable seating-chart #:visualize? [visualize? #f])
   (if visualize? (display-visualization-frame seating-chart) (void))
@@ -54,7 +54,7 @@
               (list-ref row x))))))
 
 (define (count-occupied-neighbors seating-chart coord)
-  (count (curry eq? 'occupied) (surrounding-states seating-chart coord)))
+  (count (curry eqv? 'occupied) (surrounding-states seating-chart coord)))
 
 (define (surrounding-states seating-chart coord)
   (define move (λ (coord x+ y+) (cons (+ (car coord) x+) (+ (cdr coord) y+))))

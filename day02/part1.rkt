@@ -14,7 +14,7 @@
           password)))
 
 (define (valid-password? min max char password)
-  (let ([count (for/sum ([c password]) (if (eq? c char) 1 0))])
+  (let ([count (for/sum ([c password]) (if (eqv? c char) 1 0))])
     (if (or (< count min) (> count max)) #f #t)))
 
 (define (valid-record? record)

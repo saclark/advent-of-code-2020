@@ -20,8 +20,8 @@
 (define (valid-password? pos1 pos2 char password)
   (let ([pos1-char (if (>= (string-length password) pos1) (string-ref password (- pos1 1)) #f)]
         [pos2-char (if (>= (string-length password) pos2) (string-ref password (- pos2 1)) #f)])
-    (if (and (or (eq? pos1-char char) (eq? pos2-char char))
-             (not (eq? pos1-char pos2-char)))
+    (if (and (or (eqv? pos1-char char) (eqv? pos2-char char))
+             (not (eqv? pos1-char pos2-char)))
         #t
         #f)))
 

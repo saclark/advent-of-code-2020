@@ -18,7 +18,7 @@
   (~> people
       count-group-answers
       hash-values
-      (filter (curry eq? (length people)) _)
+      (filter (curry = (length people)) _)
       length))
 
 (define (count-group-answers people)

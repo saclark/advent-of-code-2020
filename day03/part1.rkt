@@ -18,6 +18,6 @@
 (define (get-input file-path)
   (for/list ([line (file->lines file-path)])
     (for/list ([char (string->list line)])
-      (eq? char #\#))))
+      (eqv? char #\#))))
 
 (solve (get-input "input.txt"))
