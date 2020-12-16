@@ -10,7 +10,7 @@
 
 (struct state ([bitmask #:mutable] [memory #:mutable]))
 
-(define program-state (state #f (make-hash)))
+(define program-state (state #f (make-hasheq)))
 
 (define (solve instructions)
   (for ([instruction instructions])

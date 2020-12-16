@@ -12,7 +12,7 @@
              n))
 
 (define (make-history starting-numbers)
-  (for/fold ([history (hash)])
+  (for/fold ([history (hasheq)])
             ([i (in-range (vector-length starting-numbers))])
     (hash-set history (vector-ref starting-numbers i) (list (+ i 1)))))
 
