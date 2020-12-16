@@ -1,7 +1,8 @@
 #lang racket/base
 
 (require racket/file
-         racket/match)
+         racket/match
+         rackunit)
 
 (define (solve** x y ls)
   (match ls
@@ -23,4 +24,4 @@
        (if result result (solve rest)))]
     [else #f]))
 
-(solve (map string->number (file->lines "input.txt")))
+(check-eqv? (solve (map string->number (file->lines "input.txt"))) 103927824)

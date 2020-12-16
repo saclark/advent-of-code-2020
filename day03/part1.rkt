@@ -1,7 +1,8 @@
 #lang racket/base
 
 (require racket/file
-         racket/list)
+         racket/list
+         rackunit)
 
 (define m (- (/ 1 3)))
 (define b 0)
@@ -20,4 +21,4 @@
     (for/list ([char (string->list line)])
       (eqv? char #\#))))
 
-(solve (get-input "input.txt"))
+(check-eqv? (solve (get-input "input.txt")) 282)

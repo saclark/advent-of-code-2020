@@ -2,9 +2,9 @@
 
 (require racket/file
          racket/function
-         racket/list
          racket/string
-         threading)
+         threading
+         rackunit)
 
 (define (solve input-file)
   (for/sum ([group (~> input-file
@@ -28,4 +28,4 @@
               ([answer (string->list person)])
       (hash-update acc* answer (lambda (v) (+ v 1)) 0))))
 
-(solve "input.txt")
+(check-eqv? (solve "input.txt") 3398)

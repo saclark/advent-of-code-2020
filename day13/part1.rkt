@@ -3,7 +3,8 @@
 (require racket/file
          racket/function
          racket/match
-         racket/string)
+         racket/string
+         rackunit)
 
 (define (solve timestamp ids)
   (let ([earliest-bus (earliest-bus timestamp ids)])
@@ -27,4 +28,4 @@
             (map string->number (filter bus-id? (string-split ids ","))))))
 
 (let-values ([(timestamp ids) (parse-input "input.txt")])
-  (solve timestamp ids))
+  (check-eqv? (solve timestamp ids) 2165))

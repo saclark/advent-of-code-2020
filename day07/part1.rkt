@@ -2,7 +2,8 @@
 
 (require racket/file
          racket/match
-         racket/string)
+         racket/string
+         rackunit)
 
 (define target-bag-color "shiny gold")
 
@@ -48,4 +49,4 @@
      (match-let ([(list num color) (car (regexp-match* #rx"([0-9]) (.+)" spec #:match-select cdr))])
        (cons color (string->number num)))]))
 
-(solve "input.txt")
+(check-eqv? (solve "input.txt") 222)

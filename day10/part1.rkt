@@ -2,7 +2,8 @@
 
 (require racket/file
          racket/function
-         racket/list)
+         racket/list
+         rackunit)
 
 (define (solve ratings)
   (let* ([sorted-ratings (sort ratings <)]
@@ -23,4 +24,4 @@
 (define (parse-input input-file-path)
   (map string->number (file->lines input-file-path)))
 
-(solve (parse-input "input.txt"))
+(check-eqv? (solve (parse-input "input.txt")) 1984)

@@ -3,7 +3,8 @@
 (require racket/file
          racket/list
          racket/match
-         racket/string)
+         racket/string
+         rackunit)
 
 (define (solve starting-numbers n)
   (play-game (make-history starting-numbers)
@@ -35,4 +36,4 @@
 (define (parse-input input-file-path)
   (list->vector (map string->number (string-split (file->string input-file-path) ","))))
 
-(solve (parse-input "input.txt") 2020)
+(check-eqv? (solve (parse-input "input.txt") 2020) 866)

@@ -3,7 +3,8 @@
 (require racket/file
          racket/list
          racket/match
-         racket/string)
+         racket/string
+         rackunit)
 
 (define (solve file)
   (for/sum ([passport (string-split (file->string file) "\n\n")])
@@ -49,4 +50,4 @@
 (define (valid-passport-id? v)
   (and v (regexp-match-exact? #px"[0-9]{9}" v)))
 
-(solve "input.txt")
+(check-eqv? (solve "input.txt") 109)

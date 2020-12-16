@@ -3,7 +3,8 @@
 (require racket/file
          racket/format
          racket/match
-         racket/string)
+         racket/string
+         rackunit)
 
 (define int-size 36)
 
@@ -51,4 +52,4 @@
       [(list "mask" mask) (list 'mask (string->vector mask))]
       [(list "mem" i _ n) (list 'mem (string->number i) (string->number n))])))
 
-(solve (parse-input "input.txt"))
+(check-eqv? (solve (parse-input "input.txt")) 6317049172545)

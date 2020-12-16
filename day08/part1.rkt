@@ -4,6 +4,7 @@
          racket/match
          racket/set
          racket/string
+         rackunit
          (prefix-in srfi13: srfi/13))
 
 (define (solve input-file-path)
@@ -32,4 +33,4 @@
       ["-" (- num)]
       ["+" num])))
 
-(solve "input.txt")
+(check-eqv? (solve "input.txt") 1723)

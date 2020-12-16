@@ -1,11 +1,10 @@
 #lang racket/base
 
 (require racket/file
-         racket/format
          racket/function
          racket/list
          racket/match
-         threading)
+         rackunit)
 
 (define preamble-length 25)
 
@@ -42,4 +41,4 @@
 (define (input->numbers input-file-path)
   (map string->number (file->lines input-file-path)))
 
-(solve "input.txt")
+(check-eqv? (solve "input.txt") 23278925)

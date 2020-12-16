@@ -1,7 +1,8 @@
 #lang racket/base
 
 (require racket/file
-         racket/match)
+         racket/match
+         rackunit)
 
 (define (solve records)
   (for/sum ([record records])
@@ -25,4 +26,4 @@
         #t
         #f)))
 
-(solve (file->lines "input.txt"))
+(check-eqv? (solve (file->lines "input.txt")) 502)

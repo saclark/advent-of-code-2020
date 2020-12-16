@@ -1,7 +1,8 @@
 #lang racket/base
 
 (require racket/file
-         racket/string)
+         racket/string
+         rackunit)
 
 (define (solve buses [prev-buses '()] [t 0] [inc 1])
   (if (null? buses)
@@ -31,4 +32,4 @@
         (values (append buses (list (bus (string->number id) offset)))
                 (+ offset 1)))))
 
-(solve (parse-input "input.txt"))
+(check-eqv? (solve (parse-input "input.txt")) 534035653563227)

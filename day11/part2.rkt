@@ -5,6 +5,7 @@
          racket/list
          racket/match
          racket/string
+         rackunit
          threading)
 
 (define (solve seating-chart)
@@ -96,7 +97,7 @@
   (sleep 0.2))
 
 ;; Solution
-(solve (parse-input "input.txt"))
+(check-eqv? (solve (parse-input "input.txt")) 2085)
 
 ;; Visualization
 ;; (void

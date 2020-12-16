@@ -1,7 +1,8 @@
 #lang racket/base
 
 (require racket/file
-         racket/match)
+         racket/match
+         rackunit)
 
 (define (solve instructions)
   (define exec (λ (instruction s) (execute-instruction instruction s)))
@@ -55,4 +56,4 @@
       (cons (string->symbol (string char))
             (list->number digits)))))
 
-(solve (parse-input "input.txt"))
+(check-eqv? (solve (parse-input "input.txt")) 52069)

@@ -1,7 +1,8 @@
 #lang racket/base
 
 (require racket/file
-         racket/match)
+         racket/match
+         rackunit)
 
 (define (parse-record record)
   (match-let ([(list min max char password)
@@ -34,4 +35,4 @@
     (for/sum ([i (length records)])
       (if (thread-receive) 1 0))))
 
-(solve (file->lines "input.txt"))
+(check-eqv? (solve (file->lines "input.txt")) 548)

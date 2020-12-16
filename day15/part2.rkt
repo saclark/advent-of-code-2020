@@ -2,7 +2,8 @@
 
 (require racket/file
          racket/list
-         racket/string)
+         racket/string
+         rackunit)
 
 (define (solve starting-numbers n)
   (define history (make-hasheq))
@@ -17,4 +18,4 @@
 (define (parse-input input-file-path)
   (map string->number (string-split (file->string input-file-path) ",")))
 
-(solve (parse-input "input.txt") 30000000)
+(check-eqv? (solve (parse-input "input.txt") 30000000) 1437692)

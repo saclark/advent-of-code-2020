@@ -2,7 +2,8 @@
 
 (require racket/file
          racket/list
-         racket/string)
+         racket/string
+         rackunit)
 
 (define (solve file)
   (for/sum ([passport (string-split (file->string file) "\n\n")])
@@ -21,4 +22,4 @@
          (hash-has-key? h "ecl")
          (hash-has-key? h "pid"))))
 
-(solve "input.txt")
+(check-eqv? (solve "input.txt") 182)

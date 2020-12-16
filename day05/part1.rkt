@@ -2,7 +2,8 @@
 
 (require racket/list
          racket/file
-         racket/function)
+         racket/function
+         rackunit)
 
 (define rows (range 0 128))
 (define columns (range 0 8))
@@ -35,4 +36,4 @@
                 (binary-filter (take ls (/ ls-length 2)) (cdr instructions))
                 (binary-filter (drop ls (/ ls-length 2)) (cdr instructions)))])))
 
-(solve "input.txt")
+(check-eqv? (solve "input.txt") 901)

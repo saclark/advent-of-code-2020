@@ -3,7 +3,8 @@
 (require racket/file
          racket/list
          racket/string
-         threading)
+         threading
+         rackunit)
 
 (define (solve input-file)
   (for/sum ([group (~> input-file file->string (string-split "\n\n"))])
@@ -14,4 +15,4 @@
         remove-duplicates
         length)))
 
-(solve "input.txt")
+(check-eqv? (solve "input.txt") 6947)
