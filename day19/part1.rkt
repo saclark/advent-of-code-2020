@@ -50,16 +50,11 @@
 
 (: parse-rules (-> String (Vectorof Rule)))
 (define (parse-rules rules-str)
-  (: mapcar (All (A B) (-> (Listof (Pairof A B)) (Listof A))))
-  (define mapcar (λ (pairs) (map car pairs)))
-
   (: make-rule-tree (-> (Listof (Pairof Integer Rule)) (Vectorof Rule)))
   (define make-rule-tree
     (λ (rules)
-      (let* ([len : Integer (add1 (apply max (map car rules)))]
-             [vec : (Vectorof Rule) (make-vector len)])
-        vec)))
-  
+      (let ([len (add1 (apply max (map (ann car (-> (Pairof Integer Rule) Integer)) rules)))])
+        (make-vector len '(())))))
   (let* ([rules (map parse-rule-line (string-split rules-str "\n"))]
          [rule-tree (make-rule-tree rules)])
     (for ([rule (in-list rules)])
