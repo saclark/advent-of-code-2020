@@ -5,8 +5,7 @@
          racket/list
          racket/match
          rackunit
-         threading
-         "cantor.rkt")
+         threading)
 
 (define (solve space cycles)
   (let ([end-space (for/fold ([s space])
@@ -50,7 +49,17 @@
 (struct point (x y z) #:transparent)
 
 (define (point-key point)
-  (signed-numbers->cantor (point-x point) (point-y point) (point-z point)))
+  (signed-cantor-encode (point-x point) (point-y point) (point-z point)))
+
+(define (signed-cantor-encode x y . rest)
+  (foldl (λ (y x) (encode-signed-cantor-pair x y)) x (cons y rest)))
+
+(define (encode-signed-cantor-pair x y)
+  (encode-cantor-pair (if (>= x 0) (* 2 x) (+ (* -2 x) 1))
+                      (if (>= y 0) (* 2 y) (+ (* -2 y) 1))))
+
+(define (encode-cantor-pair x y)
+  (+ (/ (* (+ x y) (+ x y 1)) 2) y))
 
 (define (next-state space point)
   (let ([n (active-neighbor-count space point)])

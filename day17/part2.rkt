@@ -5,105 +5,112 @@
          racket/list
          racket/match
          rackunit
-         threading
-         "cantor.rkt")
+         threading)
 
 (define (solve space cycles)
-  (let ([end-space (for/fold ([s space])
-                             ([_ (in-range cycles)])
-                     (run-iteration s))])
-  (count identity (hash-values (space-points end-space)))))
+  (tree-leaf-count
+    (for/fold ([s space])
+              ([_ (in-range cycles)])
+      (run-iteration s))))
 
 (define (run-iteration space)
-  (expand-space! space)
-  (define new-space (make-new-space space))
-  (for ([w (in-range (space-min-w space) (add1 (space-max-w space)))])
-    (for ([z (in-range (space-min-z space) (add1 (space-max-z space)))])
-      (for ([y (in-range (space-min-y space) (add1 (space-max-y space)))])
-        (for ([x (in-range (space-min-x space) (add1 (space-max-x space)))])
-          (let* ([p (point x y z w)]
-                [active? (next-state space p)])
-            (when active? (set-space-point! new-space p #t)))))))
+  (define new-space (make-hasheq))
+  (for ([coord (in-list (all-space-coords space))])
+    (when (make-active? space coord) (tree-add! new-space coord)))
   new-space)
 
-(struct space (points min-x min-y min-z min-w max-x max-y max-z max-w) #:mutable)
-
-(define (make-new-space s)
-  (space (make-hasheq)
-         (space-min-x s)
-         (space-min-y s)
-         (space-min-z s)
-         (space-min-w s)
-         (space-max-x s)
-         (space-max-y s)
-         (space-max-z s)
-         (space-max-w s)))
-
-(define (expand-space! space)
-  (set-space-min-x! space (sub1 (space-min-x space)))
-  (set-space-min-y! space (sub1 (space-min-y space)))
-  (set-space-min-z! space (sub1 (space-min-z space)))
-  (set-space-min-w! space (sub1 (space-min-w space)))
-  (set-space-max-x! space (add1 (space-max-x space)))
-  (set-space-max-y! space (add1 (space-max-y space)))
-  (set-space-max-z! space (add1 (space-max-z space)))
-  (set-space-max-w! space (add1 (space-max-w space))))
-
-(define (set-space-point! space point v)
-  (hash-set! (space-points space) (point-key point) v))
-
-(struct point (x y z w) #:transparent)
-
-(define (point-key point)
-  (signed-numbers->cantor (point-x point) (point-y point) (point-z point) (point-w point)))
-
-(define (next-state space point)
-  (let ([n (active-neighbor-count space point)])
-    (if (point-active? space point)
+(define (make-active? space coord)
+  (let ([n (active-neighbor-count space coord)])
+    (if (tree-has-branch? space coord)
       (if (or (= n 2) (= n 3)) #t #f)
       (if (not (= n 3)) #f #t))))
 
-(define (active-neighbor-count space point)
-  (count identity (surrounding-states space point)))
+(define (active-neighbor-count space coord)
+  (length (filter (curry tree-has-branch? space) (neighboring-coords coord))))
 
-(define (surrounding-states space point)
+(define (all-space-coords space)
+  (define coords (make-hasheq))
+  (for ([coord (in-list (tree-branches space))])
+    (tree-add! coords coord)
+    (for ([neighbor (neighboring-coords coord)])
+      (tree-add! coords neighbor)))
+  (tree-branches coords))
+
+(define (neighboring-coords coord)
+  (let ([offsets (permutations (length coord) '(-1 0 1))])
     (for/fold ([acc '()])
-              ([x+ '(-1 0 1)])
-      (for/fold ([acc2 acc])
-                ([y+ '(-1 0 1)])
-        (for/fold ([acc3 acc2])
-                  ([z+ '(-1 0 1)])
-          (for/fold ([acc4 acc3])
-                    ([w+ '(-1 0 1)])
-            (if (and (= x+ 0) (= y+ 0) (= z+ 0) (= w+ 0))
-              acc4
-              (cons (point-active? space (neighbor point x+ y+ z+ w+)) acc4)))))))
+              ([offset (in-list offsets)])
+      (if (for/and ([o (in-list offset)]) (= 0 o))
+          acc
+          (cons (shift-coord coord offset) acc)))))
 
-(define (neighbor pnt x+ y+ z+ w+)
-  (point (+ (point-x pnt) x+)
-         (+ (point-y pnt) y+)
-         (+ (point-z pnt) z+)
-         (+ (point-w pnt) w+)))
+(define (permutations size elements)
+  (if (zero? size)
+      '(())
+      (flatmap (λ (p) (map (λ (e) (cons e p)) elements))
+               (permutations (sub1 size) elements))))
 
-(define (point-active? space point)
-  (hash-ref (space-points space) (point-key point) #f))
+(define (flatmap proc ls)
+  (foldl (λ (l acc) (append acc l)) '() (map proc ls)))
 
-(define (parse-input input-file-path)
+(define (shift-coord coord offsets)
+  (for/fold ([acc '()]
+             #:result (reverse acc))
+            ([v (in-list coord)]
+             [offset (in-list offsets)])
+    (cons (+ v offset) acc)))
+
+(define (tree-leaf-count tree)
+  (for/fold ([count 0])
+            ([(k v) (in-hash tree)])
+    (let ([sub-count (tree-leaf-count v)])
+      (if (zero? sub-count)
+          (+ count 1)
+          (+ count sub-count)))))
+
+(define (tree-branches tree)
+  (for/fold ([branches '()])
+            ([(k v) (in-hash tree)])
+    (let* ([sub-branches (tree-branches v)]
+           [branch (if (null? sub-branches)
+                       (list (list k))
+                       (map (curry cons k) (tree-branches v)))])
+      (append branches branch))))
+
+(define (tree-has-branch? tree nodes)
+  (if (null? nodes)
+      #t
+      (let ([t (hash-ref tree (car nodes) #f)])
+        (if t (tree-has-branch? t (cdr nodes)) #f))))
+
+(define (tree-add! tree nodes)
+  (unless (null? nodes)
+    (let* ([node (car nodes)]
+           [sub-tree (hash-ref tree node #f)])
+      (if sub-tree
+          (tree-add! sub-tree (cdr nodes))
+          (let ([sub-tree (make-hasheq)])
+            (tree-add! sub-tree (cdr nodes))
+            (hash-set! tree node sub-tree))))))
+
+(define (parse-input dimensions input-file-path)
   (define chars->states (λ (chars) (map char->state chars)))
   (define char->state (λ (char) (match char [#\. #f] [#\# #t])))
   (~> input-file-path
       file->lines
       (map string->list _)
       (map chars->states _)
-      layer->space))
+      (layer->space dimensions _)))
 
-(define (layer->space layer)
+(define (layer->space dimensions layer)
   (let* ([height (sub1 (length layer))]
          [width (sub1 (apply max (map length layer)))]
-         [pocket-space (space (make-hasheq) 0 0 0 0 width height 0 0)])
+         [pocket-space (make-hasheq)])
     (for ([(row y) (in-indexed layer)])
       (for ([(active? x) (in-indexed row)])
-        (set-space-point! pocket-space (point x y 0 0) active?)))
+        (when active? (tree-add! pocket-space (append (list x y) (make-list (- dimensions 2) 0))))))
      pocket-space))
 
-(check-eqv? (solve (parse-input "input.txt") 6) 1980)
+;;(check-eqv? (solve (parse-input 3 "input.txt") 6) 362)
+(check-eqv? (solve (parse-input 4 "input.txt") 6) 1980)
+;;(check-eqv? (solve (parse-input 5 "input.txt") 6) 13508)
