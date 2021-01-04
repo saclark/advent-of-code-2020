@@ -90,7 +90,7 @@
     (let* ([sub-branches (tree-branches v)]
            [branch (if (null? sub-branches)
                        (list (list k))
-                       (map (curry (ann cons (-> A (Listof A) (Listof A))) k) (tree-branches v)))])
+                       (map (curry (ann cons (-> A (Listof A) (Listof A))) k) sub-branches))])
       (append branches branch))))
 
 (: tree-has-branch? (All (A) (-> (Tree A) (Listof A) Boolean)))
