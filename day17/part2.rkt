@@ -56,7 +56,7 @@
   (if (zero? size)
       '(())
       (flat-map (λ ([permutation : (Listof A)]) (map (λ ([elem : A]) (cons elem permutation)) elements))
-               (permutations (sub1 size) elements))))
+                (permutations (sub1 size) elements))))
 
 (: flat-map (All (A B) (-> (-> A (Listof B)) (Listof A) (Listof B))))
 (define (flat-map proc ls)
@@ -125,9 +125,7 @@
 
 (: layer->space (-> Integer (Listof (Listof Boolean)) (Tree Integer)))
 (define (layer->space dimensions layer)
-  (let* ([height (sub1 (length layer))]
-         [width (sub1 (apply max (map (ann length (-> (Listof Boolean) Index)) layer)))]
-         [pocket-space : (Tree Integer) (make-hasheq)])
+  (let* ([pocket-space : (Tree Integer) (make-hasheq)])
     (for ([(row y) (in-indexed layer)])
       (for ([(active? x) (in-indexed row)])
         (when active?
