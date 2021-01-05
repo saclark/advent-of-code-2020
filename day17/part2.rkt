@@ -103,9 +103,7 @@
       (layer->space dimensions _)))
 
 (define (layer->space dimensions layer)
-  (let* ([height (sub1 (length layer))]
-         [width (sub1 (apply max (map length layer)))]
-         [pocket-space (make-hasheq)])
+  (let* ([pocket-space (make-hasheq)])
     (for ([(row y) (in-indexed layer)])
       (for ([(active? x) (in-indexed row)])
         (when active? (tree-add! pocket-space (append (list x y) (make-list (- dimensions 2) 0))))))
