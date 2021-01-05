@@ -14,7 +14,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	space.areaCoordinates()
 	for i := 0; i < iterations; i++ {
 		space = space.NextState()
 	}
