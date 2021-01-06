@@ -7,8 +7,7 @@
 
 (: solve (-> (Listof Integer) Integer Integer))
 (define (solve starting-numbers num)
-  (: history (HashTable Integer Integer))
-  (define history (make-hasheq))
+  (define history : (HashTable Integer Integer) (make-hasheq))
   (for ([(num turn) (in-indexed (drop-right starting-numbers 1))])
     (hash-set! history num (add1 turn)))
   (for/fold ([prev (last starting-numbers)])
