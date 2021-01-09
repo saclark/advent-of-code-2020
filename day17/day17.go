@@ -17,7 +17,7 @@ func main() {
 	for i := 0; i < iterations; i++ {
 		space = space.NextState()
 	}
-	fmt.Println(space.ActivesCount())
+	fmt.Println(space.KeyCount())
 }
 
 func parseInput(inputFile string, dimensions int) (ActiveSpace, error) {
@@ -31,7 +31,7 @@ func parseInput(inputFile string, dimensions int) (ActiveSpace, error) {
 	}
 	defer file.Close()
 
-	space := newActiveSpace()
+	space := ActiveSpace{}
 	scanner := bufio.NewScanner(file)
 	y := 0
 	for scanner.Scan() {
@@ -43,7 +43,7 @@ func parseInput(inputFile string, dimensions int) (ActiveSpace, error) {
 				for i := 2; i < dimensions; i++ {
 					coord[i] = 0
 				}
-				space.activate(coord)
+				space.Insert(coord)
 			}
 		}
 		y++
@@ -56,26 +56,16 @@ func parseInput(inputFile string, dimensions int) (ActiveSpace, error) {
 	return space, nil
 }
 
-type ActiveSpace struct {
-	actives IntTree
-}
-
-func newActiveSpace() ActiveSpace {
-	return ActiveSpace{IntTree{}}
-}
+type ActiveSpace = IntTrie
 
 func (s ActiveSpace) NextState() ActiveSpace {
-	newSpace := newActiveSpace()
+	newSpace := ActiveSpace{}
 	for _, coord := range s.areaCoordinates() {
 		if s.shouldActivate(coord) {
-			newSpace.activate(coord)
+			newSpace.Insert(coord)
 		}
 	}
 	return newSpace
-}
-
-func (s ActiveSpace) ActivesCount() int {
-	return s.actives.LeafCount()
 }
 
 func (s ActiveSpace) shouldActivate(coord []int) bool {
@@ -92,24 +82,20 @@ func (s ActiveSpace) shouldActivate(coord []int) bool {
 	return false
 }
 
-func (s ActiveSpace) activate(coord []int) {
-	s.actives.AddBranch(coord)
-}
-
 func (s ActiveSpace) isActive(coord []int) bool {
-	hasBranch, isLeaf := s.actives.HasBranch(coord)
-	return hasBranch && isLeaf
+	found, suffixes := s.Find(coord)
+	return found && suffixes.IsEmpty()
 }
 
 func (s ActiveSpace) areaCoordinates() [][]int {
-	coords := IntTree{}
-	for _, coord := range s.actives.Branches() {
-		coords.AddBranch(coord)
+	coords := IntTrie{}
+	for _, coord := range s.Keys() {
+		coords.Insert(coord)
 		for _, neighbor := range getNeighbors(coord) {
-			coords.AddBranch(neighbor)
+			coords.Insert(neighbor)
 		}
 	}
-	return coords.Branches()
+	return coords.Keys()
 }
 
 func getNeighbors(coord []int) [][]int {
@@ -152,7 +138,7 @@ func permute(size int, elems []int) [][]int {
 
 func shiftCoordinate(coord, shifts []int) []int {
 	if len(coord) != len(shifts) {
-		panic("lenght of offsets must equal length of coord")
+		panic("length of offsets must equal length of coord")
 	}
 	shifted := make([]int, len(coord))
 	for i, shift := range shifts {
@@ -161,12 +147,16 @@ func shiftCoordinate(coord, shifts []int) []int {
 	return shifted
 }
 
-type IntTree map[int]IntTree
+type IntTrie map[int]IntTrie
 
-func (t IntTree) LeafCount() int {
+func (t IntTrie) IsEmpty() bool {
+	return len(t) == 0
+}
+
+func (t IntTrie) KeyCount() int {
 	var count int
 	for _, v := range t {
-		subCount := v.LeafCount()
+		subCount := v.KeyCount()
 		if subCount == 0 {
 			count++
 		} else {
@@ -176,48 +166,41 @@ func (t IntTree) LeafCount() int {
 	return count
 }
 
-func (t IntTree) Branches() [][]int {
-	var branches [][]int
-	for k, subTree := range t {
-		subBranches := subTree.Branches()
-		if len(subBranches) == 0 {
-			branches = append(branches, []int{k})
-		} else {
-			for _, subBranch := range subBranches {
-				subBranch = append(subBranch[:1], subBranch[0:]...)
-				subBranch[0] = k
-				branches = append(branches, subBranch)
-			}
+func (t IntTrie) Keys() [][]int {
+	var keys [][]int
+	for k, subT := range t {
+		subKeys := subT.Keys()
+		if len(subKeys) == 0 {
+			keys = append(keys, []int{k})
+			continue
+		}
+		for _, subKey := range subKeys {
+			subKey = append(subKey[:1], subKey[0:]...)
+			subKey[0] = k
+			keys = append(keys, subKey)
 		}
 	}
-	return branches
-
+	return keys
 }
 
-func (t IntTree) HasBranch(branch []int) (hasBranch bool, isLeaf bool) {
-	subTree := t
-	for _, k := range branch {
-		v, exists := subTree[k]
+func (t IntTrie) Find(key []int) (found bool, suffixes IntTrie) {
+	for _, k := range key {
+		subT, exists := t[k]
 		if !exists {
-			return false, false
+			return false, t
 		}
-		subTree = v
+		t = subT
 	}
-	if len(subTree) != 0 {
-		return true, false
-	}
-	return true, true
+	return true, t
 }
 
-func (t IntTree) AddBranch(branch []int) {
-	subTree := t
-	for len(branch) > 0 {
-		v, exists := subTree[branch[0]]
+func (t IntTrie) Insert(key []int) {
+	for _, k := range key {
+		subT, exists := t[k]
 		if !exists {
-			v = IntTree{}
-			subTree[branch[0]] = v
+			subT = IntTrie{}
+			t[k] = subT
 		}
-		subTree = v
-		branch = branch[1:]
+		t = subT
 	}
 }
