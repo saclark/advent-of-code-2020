@@ -128,22 +128,15 @@ func (g *GameOfLife) areaCoordinates() [][]int {
 }
 
 func (g *GameOfLife) getNeighbors(coord []int) [][]int {
-	var neighbors [][]int
-	for _, shifts := range g.shifts {
-		neighbors = append(neighbors, shiftCoordinate(coord, shifts))
+	neighbors := make([][]int, len(g.shifts))
+	for i, shifts := range g.shifts {
+		shifted := make([]int, len(coord))
+		for j, shift := range shifts {
+			shifted[j] = coord[j] + shift
+		}
+		neighbors[i] = shifted
 	}
 	return neighbors
-}
-
-func shiftCoordinate(coord, shifts []int) []int {
-	if len(coord) != len(shifts) {
-		panic("length of offsets must equal length of coord")
-	}
-	shifted := make([]int, len(coord))
-	for i, shift := range shifts {
-		shifted[i] = coord[i] + shift
-	}
-	return shifted
 }
 
 type IntTrie map[int]IntTrie
