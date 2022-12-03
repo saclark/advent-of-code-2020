@@ -56,26 +56,28 @@ func coordinateShifts(dimensions, maxNeighborDistance int) [][]int {
 	if maxNeighborDistance <= 0 {
 		return [][]int{}
 	}
-	dimensionShifts := make([]int, (maxNeighborDistance*2)+1)
-	for i, s := 0, -maxNeighborDistance; s <= maxNeighborDistance; i, s = i+1, s+1 {
-		dimensionShifts[i] = s
-	}
-	return permuteShifts(dimensions, dimensionShifts)
+	return permuteShifts(dimensions, -maxNeighborDistance, maxNeighborDistance, dimensions)
 }
 
-func permuteShifts(size int, elems []int) [][]int {
-	if size == 0 {
+func permuteShifts(dimensions, minShift, maxShift, iter int) [][]int {
+	if iter == 0 {
 		return [][]int{{}}
 	}
 	permutations := [][]int{}
-	for _, perm := range permuteShifts(size-1, elems) {
-		for _, elem := range elems {
-			updatedPerm := make([]int, len(perm)+1)
-			updatedPerm[0] = elem
-			for i, p := range perm {
-				updatedPerm[i+1] = p
+	for _, perm := range permuteShifts(dimensions, minShift, maxShift, iter-1) {
+		for s := minShift; s <= maxShift; s++ {
+			if iter == dimensions {
+				allZero := s == 0
+				for _, p := range perm {
+					if p != 0 {
+						allZero = false
+					}
+				}
+				if allZero {
+					continue
+				}
 			}
-			permutations = append(permutations, updatedPerm)
+			permutations = append(permutations, append([]int{s}, perm...))
 		}
 	}
 	return permutations
@@ -128,21 +130,9 @@ func (g *GameOfLife) areaCoordinates() [][]int {
 func (g *GameOfLife) getNeighbors(coord []int) [][]int {
 	var neighbors [][]int
 	for _, shifts := range g.shifts {
-		if isZeroShift(shifts) {
-			continue
-		}
 		neighbors = append(neighbors, shiftCoordinate(coord, shifts))
 	}
 	return neighbors
-}
-
-func isZeroShift(shifts []int) bool {
-	for _, shift := range shifts {
-		if shift != 0 {
-			return false
-		}
-	}
-	return true
 }
 
 func shiftCoordinate(coord, shifts []int) []int {
