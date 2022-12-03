@@ -14,13 +14,11 @@ func main() {
 	var (
 		cpuprofile          string
 		memprofile          string
-		dimensions          int
 		maxNeighborDistance int
 		iterations          int
 	)
 	flag.StringVar(&cpuprofile, "cpuprofile", "", "write cpu profile to file")
 	flag.StringVar(&memprofile, "memprofile", "", "write memory profile to this file")
-	flag.IntVar(&dimensions, "n", 4, "dimensions")
 	flag.IntVar(&maxNeighborDistance, "d", 1, "maxNeighborDistance")
 	flag.IntVar(&iterations, "i", 6, "iterations")
 	flag.Parse()
@@ -36,7 +34,7 @@ func main() {
 	}
 	defer f.Close()
 
-	initActives, err := gol.ParseGameState(f, dimensions)
+	initActives, err := gol.ParseGameState(f)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -50,7 +48,7 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	game := gol.NewGameOfLife(initActives, dimensions, maxNeighborDistance)
+	game := gol.NewGameOfLife(initActives, maxNeighborDistance)
 	for i := 0; i < iterations; i++ {
 		game.NextState()
 	}
