@@ -83,6 +83,10 @@ func permuteShifts(dimensions, minShift, maxShift, iter int) [][]int {
 	return permutations
 }
 
+func (g *GameOfLife) ActiveCoordinateCount() int {
+	return g.actives.KeyCount()
+}
+
 func (g *GameOfLife) NextState() {
 	newActives := IntTrie{}
 	for _, coord := range g.areaCoordinates() {
@@ -93,8 +97,16 @@ func (g *GameOfLife) NextState() {
 	g.actives = newActives
 }
 
-func (g *GameOfLife) ActiveCoordinateCount() int {
-	return g.actives.KeyCount()
+func (g *GameOfLife) areaCoordinates() [][]int {
+	coords := IntTrie{}
+	for _, coord := range g.actives.Keys() {
+		coords.Insert(coord)
+		g.eachNeighbor(coord, func(neighbor []int) bool {
+			coords.Insert(neighbor)
+			return true
+		})
+	}
+	return coords.Keys()
 }
 
 func (g *GameOfLife) shouldActivate(coord []int) bool {
@@ -115,18 +127,6 @@ func (g *GameOfLife) shouldActivate(coord []int) bool {
 func (g *GameOfLife) isActive(coord []int) bool {
 	found, suffixes := g.actives.Find(coord)
 	return found && suffixes.IsEmpty()
-}
-
-func (g *GameOfLife) areaCoordinates() [][]int {
-	coords := IntTrie{}
-	for _, coord := range g.actives.Keys() {
-		coords.Insert(coord)
-		g.eachNeighbor(coord, func(neighbor []int) bool {
-			coords.Insert(neighbor)
-			return true
-		})
-	}
-	return coords.Keys()
 }
 
 func (g *GameOfLife) eachNeighbor(coord []int, f func([]int) bool) {
