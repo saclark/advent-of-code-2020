@@ -1,38 +1,17 @@
-package main
+package gol
 
 import (
 	"bufio"
 	"fmt"
-	"log"
-	"os"
+	"io"
 )
 
-func main() {
-	dimensions := 4
-	iterations := 6
-	space, err := parseInput("input.txt", dimensions)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for i := 0; i < iterations; i++ {
-		space = space.NextState()
-	}
-	fmt.Println(space.KeyCount())
-}
-
-func parseInput(inputFile string, dimensions int) (ActiveSpace, error) {
+func ParseGameState(r io.Reader, dimensions int) (ActiveSpace, error) {
 	if dimensions < 2 {
 		panic("dimensions must be >= 2")
 	}
-
-	file, err := os.Open(inputFile)
-	if err != nil {
-		return ActiveSpace{}, fmt.Errorf("opening input file: %w", err)
-	}
-	defer file.Close()
-
 	space := ActiveSpace{}
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(r)
 	y := 0
 	for scanner.Scan() {
 		for x, char := range scanner.Text() {
