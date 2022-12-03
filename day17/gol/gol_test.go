@@ -16,20 +16,22 @@ func TestNDimensionalGameOfLife(t *testing.T) {
 .####..#`
 
 	const (
-		dimensions = 4
-		iterations = 6
+		dimensions          = 4
+		maxNeighborDistance = 1
+		iterations          = 6
 	)
 
-	space, err := ParseGameState(strings.NewReader(input), dimensions)
+	initActives, err := ParseGameState(strings.NewReader(input), dimensions)
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	game := NewGameOfLife(initActives, dimensions, maxNeighborDistance)
 	for i := 0; i < iterations; i++ {
-		space = space.NextState()
+		game.NextState()
 	}
 
-	if want, got := 1980, space.KeyCount(); want != got {
+	if want, got := 1980, game.ActiveCoordinateCount(); want != got {
 		t.Errorf("want: %d, got: %d", want, got)
 	}
 }

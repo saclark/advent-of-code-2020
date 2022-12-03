@@ -6,11 +6,11 @@ import (
 	"io"
 )
 
-func ParseGameState(r io.Reader, dimensions int) (ActiveSpace, error) {
+func ParseGameState(r io.Reader, dimensions int) (IntTrie, error) {
 	if dimensions < 2 {
 		panic("dimensions must be >= 2")
 	}
-	space := ActiveSpace{}
+	space := IntTrie{}
 	scanner := bufio.NewScanner(r)
 	y := 0
 	for scanner.Scan() {
@@ -29,80 +29,46 @@ func ParseGameState(r io.Reader, dimensions int) (ActiveSpace, error) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		return ActiveSpace{}, fmt.Errorf("scanning input file: %w", err)
+		return IntTrie{}, fmt.Errorf("scanning input file: %w", err)
 	}
 
 	return space, nil
 }
 
-type ActiveSpace = IntTrie
-
-func (s ActiveSpace) NextState() ActiveSpace {
-	newSpace := ActiveSpace{}
-	for _, coord := range s.areaCoordinates() {
-		if s.shouldActivate(coord) {
-			newSpace.Insert(coord)
-		}
-	}
-	return newSpace
+type GameOfLife struct {
+	dimensions int
+	shifts     [][]int
+	actives    IntTrie
 }
 
-func (s ActiveSpace) shouldActivate(coord []int) bool {
-	var activeNeighborCount int
-	for _, neighbor := range getNeighbors(coord) {
-		if s.isActive(neighbor) {
-			activeNeighborCount++
-		}
+func NewGameOfLife(actives IntTrie, dimensions, maxNeighborDistance int) *GameOfLife {
+	if dimensions < 2 {
+		panic("dimensions must be >= 2")
 	}
-	isActive := s.isActive(coord)
-	if (isActive && activeNeighborCount == 2 || activeNeighborCount == 3) || (!isActive && activeNeighborCount == 3) {
-		return true
+	return &GameOfLife{
+		dimensions: dimensions,
+		shifts:     coordinateShifts(dimensions, maxNeighborDistance),
+		actives:    actives,
 	}
-	return false
 }
 
-func (s ActiveSpace) isActive(coord []int) bool {
-	found, suffixes := s.Find(coord)
-	return found && suffixes.IsEmpty()
+func coordinateShifts(dimensions, maxNeighborDistance int) [][]int {
+	if maxNeighborDistance <= 0 {
+		return [][]int{}
+	}
+	dimensionShifts := make([]int, (maxNeighborDistance*2)+1)
+	for i, s := 0, -maxNeighborDistance; s <= maxNeighborDistance; i, s = i+1, s+1 {
+		dimensionShifts[i] = s
+	}
+	return permuteShifts(dimensions, dimensionShifts)
 }
 
-func (s ActiveSpace) areaCoordinates() [][]int {
-	coords := IntTrie{}
-	for _, coord := range s.Keys() {
-		coords.Insert(coord)
-		for _, neighbor := range getNeighbors(coord) {
-			coords.Insert(neighbor)
-		}
-	}
-	return coords.Keys()
-}
-
-func getNeighbors(coord []int) [][]int {
-	isZeroShift := func(shifts []int) bool {
-		for _, shift := range shifts {
-			if shift != 0 {
-				return false
-			}
-		}
-		return true
-	}
-
-	var neighbors [][]int
-	for _, shifts := range permute(len(coord), []int{-1, 0, 1}) {
-		if isZeroShift(shifts) {
-			continue
-		}
-		neighbors = append(neighbors, shiftCoordinate(coord, shifts))
-	}
-	return neighbors
-}
-
-func permute(size int, elems []int) [][]int {
+func permuteShifts(size int, elems []int) [][]int {
 	if size == 0 {
 		return [][]int{{}}
 	}
 	permutations := [][]int{}
-	for _, perm := range permute(size-1, elems) {
+	for _, perm := range permuteShifts(size-1, elems) {
 		for _, elem := range elems {
 			updatedPerm := make([]int, len(perm)+1)
 			updatedPerm[0] = elem
@@ -113,6 +79,70 @@ func permute(size int, elems []int) [][]int {
 		}
 	}
 	return permutations
+}
+
+func (g *GameOfLife) NextState() {
+	newActives := IntTrie{}
+	for _, coord := range g.areaCoordinates() {
+		if g.shouldActivate(coord) {
+			newActives.Insert(coord)
+		}
+	}
+	g.actives = newActives
+}
+
+func (g *GameOfLife) ActiveCoordinateCount() int {
+	return g.actives.KeyCount()
+}
+
+func (g *GameOfLife) shouldActivate(coord []int) bool {
+	var activeNeighborCount int
+	for _, neighbor := range g.getNeighbors(coord) {
+		if g.isActive(neighbor) {
+			activeNeighborCount++
+		}
+	}
+	isActive := g.isActive(coord)
+	if (isActive && activeNeighborCount == 2 || activeNeighborCount == 3) || (!isActive && activeNeighborCount == 3) {
+		return true
+	}
+	return false
+}
+
+func (g *GameOfLife) isActive(coord []int) bool {
+	found, suffixes := g.actives.Find(coord)
+	return found && suffixes.IsEmpty()
+}
+
+func (g *GameOfLife) areaCoordinates() [][]int {
+	coords := IntTrie{}
+	for _, coord := range g.actives.Keys() {
+		coords.Insert(coord)
+		for _, neighbor := range g.getNeighbors(coord) {
+			coords.Insert(neighbor)
+		}
+	}
+	return coords.Keys()
+}
+
+func (g *GameOfLife) getNeighbors(coord []int) [][]int {
+	var neighbors [][]int
+	for _, shifts := range g.shifts {
+		if isZeroShift(shifts) {
+			continue
+		}
+		neighbors = append(neighbors, shiftCoordinate(coord, shifts))
+	}
+	return neighbors
+}
+
+func isZeroShift(shifts []int) bool {
+	for _, shift := range shifts {
+		if shift != 0 {
+			return false
+		}
+	}
+	return true
 }
 
 func shiftCoordinate(coord, shifts []int) []int {

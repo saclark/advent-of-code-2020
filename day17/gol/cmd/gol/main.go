@@ -36,7 +36,7 @@ func main() {
 	}
 	defer f.Close()
 
-	space, err := gol.ParseGameState(f, dimensions)
+	initActives, err := gol.ParseGameState(f, dimensions)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -50,11 +50,12 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
+	game := gol.NewGameOfLife(initActives, dimensions, maxNeighborDistance)
 	for i := 0; i < iterations; i++ {
-		space = space.NextState()
+		game.NextState()
 	}
 
-	fmt.Println(space.KeyCount())
+	fmt.Println(game.ActiveCoordinateCount())
 
 	if memprofile != "" {
 		f, err := os.Create(memprofile)
