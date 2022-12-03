@@ -99,14 +99,12 @@ func (g *GameOfLife) ActiveCoordinateCount() int {
 
 func (g *GameOfLife) shouldActivate(coord []int) bool {
 	var activeNeighborCount int
-	for _, neighbor := range g.getNeighbors(coord) {
+	g.eachNeighbor(coord, func(neighbor []int) bool {
 		if g.isActive(neighbor) {
 			activeNeighborCount++
 		}
-		if activeNeighborCount > 3 {
-			break
-		}
-	}
+		return activeNeighborCount <= 3
+	})
 	isActive := g.isActive(coord)
 	if (isActive && activeNeighborCount == 2 || activeNeighborCount == 3) || (!isActive && activeNeighborCount == 3) {
 		return true
@@ -123,23 +121,24 @@ func (g *GameOfLife) areaCoordinates() [][]int {
 	coords := IntTrie{}
 	for _, coord := range g.actives.Keys() {
 		coords.Insert(coord)
-		for _, neighbor := range g.getNeighbors(coord) {
+		g.eachNeighbor(coord, func(neighbor []int) bool {
 			coords.Insert(neighbor)
-		}
+			return true
+		})
 	}
 	return coords.Keys()
 }
 
-func (g *GameOfLife) getNeighbors(coord []int) [][]int {
-	neighbors := make([][]int, len(g.shifts))
-	for i, shifts := range g.shifts {
-		shifted := make([]int, len(coord))
+func (g *GameOfLife) eachNeighbor(coord []int, f func([]int) bool) {
+	for _, shifts := range g.shifts {
+		neighbor := make([]int, len(coord))
 		for j, shift := range shifts {
-			shifted[j] = coord[j] + shift
+			neighbor[j] = coord[j] + shift
 		}
-		neighbors[i] = shifted
+		if !f(neighbor) {
+			return
+		}
 	}
-	return neighbors
 }
 
 type IntTrie map[int]IntTrie
