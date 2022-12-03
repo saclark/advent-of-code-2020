@@ -103,6 +103,9 @@ func (g *GameOfLife) shouldActivate(coord []int) bool {
 		if g.isActive(neighbor) {
 			activeNeighborCount++
 		}
+		if activeNeighborCount > 3 {
+			break
+		}
 	}
 	isActive := g.isActive(coord)
 	if (isActive && activeNeighborCount == 2 || activeNeighborCount == 3) || (!isActive && activeNeighborCount == 3) {
