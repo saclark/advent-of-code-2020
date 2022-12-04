@@ -125,8 +125,8 @@ func (g *GameOfLife) shouldActivate(coord []int) bool {
 }
 
 func (g *GameOfLife) isActive(coord []int) bool {
-	found, suffixes := g.actives.Find(coord)
-	return found && suffixes.IsEmpty()
+	suffixes, ok := g.actives.Find(coord)
+	return ok && suffixes.IsEmpty()
 }
 
 func (g *GameOfLife) eachNeighbor(coord []int, f func([]int) bool) {
@@ -177,15 +177,15 @@ func (t Trie[T]) Keys() [][]T {
 	return keys
 }
 
-func (t Trie[T]) Find(key []T) (found bool, suffixes Trie[T]) {
+func (t Trie[T]) Find(key []T) (suffixes Trie[T], found bool) {
 	for _, k := range key {
 		subT, exists := t[k]
 		if !exists {
-			return false, t
+			return t, false
 		}
 		t = subT
 	}
-	return true, t
+	return t, true
 }
 
 func (t Trie[T]) Insert(key []T) {
