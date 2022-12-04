@@ -6,11 +6,11 @@ import (
 	"io"
 )
 
-func ParseGameState(r io.Reader, dimensions int) (IntTrie, error) {
+func ParseGameState(r io.Reader, dimensions int) (Trie[int], error) {
 	if dimensions < 2 {
 		panic("dimensions must be >= 2")
 	}
-	space := IntTrie{}
+	space := Trie[int]{}
 	scanner := bufio.NewScanner(r)
 	y := 0
 	for scanner.Scan() {
@@ -29,7 +29,7 @@ func ParseGameState(r io.Reader, dimensions int) (IntTrie, error) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		return IntTrie{}, fmt.Errorf("scanning input file: %w", err)
+		return Trie[int]{}, fmt.Errorf("scanning input file: %w", err)
 	}
 
 	return space, nil
@@ -38,10 +38,10 @@ func ParseGameState(r io.Reader, dimensions int) (IntTrie, error) {
 type GameOfLife struct {
 	dimensions int
 	shifts     [][]int
-	actives    IntTrie
+	actives    Trie[int]
 }
 
-func NewGameOfLife(actives IntTrie, dimensions, maxNeighborDistance int) *GameOfLife {
+func NewGameOfLife(actives Trie[int], dimensions, maxNeighborDistance int) *GameOfLife {
 	if dimensions < 2 {
 		panic("dimensions must be >= 2")
 	}
@@ -88,7 +88,7 @@ func (g *GameOfLife) ActiveCoordinateCount() int {
 }
 
 func (g *GameOfLife) NextState() {
-	newActives := IntTrie{}
+	newActives := Trie[int]{}
 	for _, coord := range g.areaCoordinates() {
 		if g.shouldActivate(coord) {
 			newActives.Insert(coord)
@@ -98,7 +98,7 @@ func (g *GameOfLife) NextState() {
 }
 
 func (g *GameOfLife) areaCoordinates() [][]int {
-	coords := IntTrie{}
+	coords := Trie[int]{}
 	for _, coord := range g.actives.Keys() {
 		coords.Insert(coord)
 		g.eachNeighbor(coord, func(neighbor []int) bool {
@@ -141,13 +141,13 @@ func (g *GameOfLife) eachNeighbor(coord []int, f func([]int) bool) {
 	}
 }
 
-type IntTrie map[int]IntTrie
+type Trie[T comparable] map[T]Trie[T]
 
-func (t IntTrie) IsEmpty() bool {
+func (t Trie[T]) IsEmpty() bool {
 	return len(t) == 0
 }
 
-func (t IntTrie) KeyCount() int {
+func (t Trie[T]) KeyCount() int {
 	var count int
 	for _, v := range t {
 		subCount := v.KeyCount()
@@ -160,12 +160,12 @@ func (t IntTrie) KeyCount() int {
 	return count
 }
 
-func (t IntTrie) Keys() [][]int {
-	var keys [][]int
+func (t Trie[T]) Keys() [][]T {
+	var keys [][]T
 	for k, subT := range t {
 		subKeys := subT.Keys()
 		if len(subKeys) == 0 {
-			keys = append(keys, []int{k})
+			keys = append(keys, []T{k})
 			continue
 		}
 		for _, subKey := range subKeys {
@@ -177,7 +177,7 @@ func (t IntTrie) Keys() [][]int {
 	return keys
 }
 
-func (t IntTrie) Find(key []int) (found bool, suffixes IntTrie) {
+func (t Trie[T]) Find(key []T) (found bool, suffixes Trie[T]) {
 	for _, k := range key {
 		subT, exists := t[k]
 		if !exists {
@@ -188,11 +188,11 @@ func (t IntTrie) Find(key []int) (found bool, suffixes IntTrie) {
 	return true, t
 }
 
-func (t IntTrie) Insert(key []int) {
+func (t Trie[T]) Insert(key []T) {
 	for _, k := range key {
 		subT, exists := t[k]
 		if !exists {
-			subT = IntTrie{}
+			subT = Trie[T]{}
 			t[k] = subT
 		}
 		t = subT
