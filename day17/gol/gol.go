@@ -129,9 +129,11 @@ func (g *GameOfLife) isActive(coord []int) bool {
 	return ok && suffixes.IsEmpty()
 }
 
+// Assumes len(coord) == len(g.shifts[i]) == g.dimensions
 func (g *GameOfLife) eachNeighbor(coord []int, f func([]int) bool) {
+	// Could also store this on g.neighbor and allocate this once up front.
+	neighbor := make([]int, len(coord))
 	for _, shifts := range g.shifts {
-		neighbor := make([]int, len(coord))
 		for j, shift := range shifts {
 			neighbor[j] = coord[j] + shift
 		}
