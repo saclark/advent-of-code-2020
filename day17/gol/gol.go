@@ -179,8 +179,8 @@ func (t Trie[T]) Keys() [][]T {
 
 func (t Trie[T]) Find(key []T) (suffixes Trie[T], found bool) {
 	for _, k := range key {
-		subT, exists := t[k]
-		if !exists {
+		subT, ok := t[k]
+		if !ok {
 			return t, false
 		}
 		t = subT
@@ -190,8 +190,8 @@ func (t Trie[T]) Find(key []T) (suffixes Trie[T], found bool) {
 
 func (t Trie[T]) Insert(key []T) {
 	for _, k := range key {
-		subT, exists := t[k]
-		if !exists {
+		subT, ok := t[k]
+		if !ok {
 			subT = Trie[T]{}
 			t[k] = subT
 		}
