@@ -126,8 +126,8 @@ func (g *GameOfLife) isActive(coord Point) bool {
 }
 
 func (g *GameOfLife) eachNeighbor(coord Point, f func(Point) bool) {
+	neighbor := Point{}
 	for _, shifts := range g.shifts {
-		neighbor := Point{}
 		for j, shift := range shifts {
 			neighbor[j] = coord[j] + shift
 		}
