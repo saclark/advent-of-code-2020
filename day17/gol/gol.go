@@ -88,25 +88,23 @@ func (g *GameOfLife) ActiveCoordinateCount() int {
 }
 
 func (g *GameOfLife) NextState() {
+	space := Trie[int]{}
+	g.actives.EachKeyAtDepth(g.dimensions, func(coord []int) bool {
+		space.Insert(coord)
+		g.eachNeighbor(coord, func(neighbor []int) bool {
+			space.Insert(neighbor)
+			return true
+		})
+		return true
+	})
 	newActives := Trie[int]{}
-	for _, coord := range g.areaCoordinates() {
+	space.EachKeyAtDepth(g.dimensions, func(coord []int) bool {
 		if g.shouldActivate(coord) {
 			newActives.Insert(coord)
 		}
-	}
+		return true
+	})
 	g.actives = newActives
-}
-
-func (g *GameOfLife) areaCoordinates() [][]int {
-	coords := Trie[int]{}
-	for _, coord := range g.actives.Keys() {
-		coords.Insert(coord)
-		g.eachNeighbor(coord, func(neighbor []int) bool {
-			coords.Insert(neighbor)
-			return true
-		})
-	}
-	return coords.Keys()
 }
 
 func (g *GameOfLife) shouldActivate(coord []int) bool {
@@ -162,21 +160,22 @@ func (t Trie[T]) KeyCount() int {
 	return count
 }
 
-func (t Trie[T]) Keys() [][]T {
-	var keys [][]T
+func (t Trie[T]) EachKeyAtDepth(depth int, f func([]T) bool) {
+	key := make([]T, depth)
+	t.walkKeys(0, key, f)
+}
+
+func (t Trie[T]) walkKeys(level int, key []T, f func([]T) bool) bool {
+	if level >= cap(key) {
+		return f(key)
+	}
 	for k, subT := range t {
-		subKeys := subT.Keys()
-		if len(subKeys) == 0 {
-			keys = append(keys, []T{k})
-			continue
-		}
-		for _, subKey := range subKeys {
-			subKey = append(subKey[:1], subKey[0:]...)
-			subKey[0] = k
-			keys = append(keys, subKey)
+		key[level] = k
+		if !subT.walkKeys(level+1, key, f) {
+			return false
 		}
 	}
-	return keys
+	return true
 }
 
 func (t Trie[T]) Find(key []T) (suffixes Trie[T], found bool) {
